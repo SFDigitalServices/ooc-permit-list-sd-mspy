@@ -123,10 +123,10 @@ class PermitList():
             permit_list.sort(key=lambda v: v.get('DBA NAME', '')+' '+v.get('APPLICATION ID', ''))
             if isinstance(permit_list, list):
                 if permit_type == 'retail_legacy':
-                    data_json = self.get_legacy_list_transform(permit_list)
+                    data = self.get_legacy_list_transform(permit_list)
                 else:
                     data = {'list': permit_list}
-                    data_json = jsend.success(data)
+                data_json = jsend.success(data)
                 msg = 'success ('+str(len(permit_list))+')'
         else:
             pass
