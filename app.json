@@ -1,0 +1,34 @@
+{
+  "addons": [
+
+  ],
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    }
+  ],
+  "env": {
+    "environment": "review",
+    "SD_HOST": {
+      "required": true
+    },
+    "SD_KEY": {
+      "required": true
+    },
+    "SD_PROJECT": {
+      "required": true
+    },
+    "SENTRY_DSN": {
+      "required": true
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1
+    }
+  },
+  "name": "ooc-permit-list-sd-mspy",
+  "scripts": {
+  },
+  "stack": "heroku-18"
+}
