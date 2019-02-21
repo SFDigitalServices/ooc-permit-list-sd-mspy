@@ -61,6 +61,8 @@ class PermitList():
                     }
                     data = resp['responses']
                     item['APPLICATION ID'] = str(data.get('uqqrsogr') or '')
+                    if not data.get('uqqrsogr'):
+                        item['APPLICATION ID'] = 'P-' + str(resp['sequential_id']) + 'S'
                     item['DBA NAME'] = str(data.get('60w4ep9y') or '')
                     item['PARCEL'] = data.get('kvrgbqrl', '')
                     if data.get('kby1cm3l'):

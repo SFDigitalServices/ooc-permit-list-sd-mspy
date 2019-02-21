@@ -6,7 +6,6 @@ def test_get_list_transform():
     """Test ELT for the Permit List"""
     permit_list_object = PermitList()
     permit_list = permit_list_object.get_list_transform(get_mock_sd_response())
-    print(permit_list)
     expected_permit_list = get_expected_permit_list()
     assert expected_permit_list == permit_list
 
@@ -20,7 +19,7 @@ def test_get_legacy_list_transform():
 
 def get_expected_permit_list():
     """returns expected permit list from mock"""
-    return json.loads("""[{"APPLICATION ID": "TESTblah", "DBA NAME": "",
+    return json.loads("""[{"APPLICATION ID": "P-47S", "DBA NAME": "TESTblah",
         "ADDRESS": "California", "PARCEL": "no idea", "STATUS": "SUBMITTED", "REFERRING DEPARTMENT": "", "CULTIVATOR OR GROWER (INDOOR)": "SUBMITTED", "DISTRIBUTOR": "SUBMITTED", "RETAILER (MEDICINAL AND ADULT USE)": "SUBMITTED", "MANUFACTURER (NONVOLATILE)": "SUBMITTED"},
         {"APPLICATION ID": "TESTblah2", "DBA NAME": "Bestest Buddy Bud", "ADDRESS": "California", "PARCEL": "no idea", "STATUS": "SUBMITTED", "REFERRING DEPARTMENT": "", 
         "CULTIVATOR OR GROWER (INDOOR)": "SUBMITTED", "DISTRIBUTOR": "SUBMITTED", "MANUFACTURER (NONVOLATILE)": "SUBMITTED", 
@@ -29,7 +28,7 @@ def get_expected_permit_list():
 
 def get_expected_legacy_permit_list():
     """returns legacy expected permit list from mock"""
-    return json.loads("""{"TESTblah": {"application_id": "TESTblah", "dba_name": "", 
+    return json.loads("""{"TESTblah P-47S": {"application_id": "P-47S", "dba_name": "TESTblah",
     "address": "California", "parcel": "no idea", "activities": "retailer (medical and adult use)", "referring_dept": "", "status": "Submitted"}, "Bestest Buddy Bud TESTblah2": {"application_id": "TESTblah2", "dba_name": "Bestest Buddy Bud", 
     "address": "California", "parcel": "no idea", 
     "activities": "retailer (medical and adult use), delivery only retailer (medical and adult use), medicinal cannabis retailer (medical only)", 
@@ -46,7 +45,7 @@ def get_mock_sd_response():
         "pretty_id": "RydXhPnDZZ34",
         "submitted_at": "2019-01-22T23:48:06.685Z",
         "responses": {
-            "uqqrsogr": "TESTblah",
+            "uqqrsogr": "",
             "rhakmnq6": "Buddy Bud",
             "9hm9uaua": "(123) 456-2234",
             "n5133tdk": null,
@@ -72,7 +71,7 @@ def get_mock_sd_response():
             "6ma0d8qo": null,
             "fkpuv8fj": "1234534",
             "t00kheyd": "Bestest Buddy Bud",
-            "60w4ep9y": null,
+            "60w4ep9y": "TESTblah",
             "kbqz4189": {
                 "city": "SF",
                 "state": "California",
