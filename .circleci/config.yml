@@ -43,7 +43,8 @@ jobs:
           name: start gunicorn
           command: |
             . venv/bin/activate
-            source .env.example
+            cp .env.example .env
+            source .env
             gunicorn 'service.microservice:start_service()'
           background: true
 
