@@ -43,6 +43,8 @@ jobs:
           name: start gunicorn
           command: |
             . venv/bin/activate
+            cp .env.example .env
+            source .env
             gunicorn 'service.microservice:start_service()'
           background: true
 
@@ -55,7 +57,7 @@ jobs:
           name: run tests
           command: |
             . venv/bin/activate
-            pytest tests
+            python -m pytest tests
 
       - store_artifacts:
           path: test-reports

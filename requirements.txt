@@ -17,6 +17,7 @@ pylint==2.2.2
 pytest==4.2.0
 python-mimeparse==1.6.0
 requests==2.21.0
+-e git://github.com/SFDigitalServices/screendoor-sdk-py@939ad2de2f2b57776fbdede870f48c6ffca3cf38#egg=screendoor_sdk
 sentry-sdk==0.6.9
 six==1.12.0
 urllib3==1.24.1
