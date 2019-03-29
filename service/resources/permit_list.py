@@ -11,6 +11,15 @@ class PermitList():
     scrndr_proj_id = None
     logger_name = ''
 
+    referred_label_map = {
+        'MOD - Referred' : "Mayor's Office of Disability",
+        'Planning - Referred' : "Planning Department",
+        'Fire - Referred' : "Fire Department",
+        'DPH - Referred' : "Department of Public Health",
+        'Police - Referred' : "Police Department",
+        'Environment - Referred' : "Department of the Environment"
+    }
+
     def __init__(self):
         self.logger_name = self.__class__.__name__.lower()
 
@@ -25,7 +34,7 @@ class PermitList():
         params = {'per_page': 100, 'page' : 1, 'label': 'Post+on+Website'}
         if permit_type == 'retail':
             # pylint: disable=line-too-long
-            params['advanced_search'] = '%5B%7B"name"%3A"forms"%2C"method"%3A"is"%2C"value"%3A5804%7D%2C%7B"name"%3A"rfdd8a5g7g"%2C"method"%3A"is_any"%2C"value"%3A%5B"retailer+(medicinal+and+adult+use)"%2C"medicinal+retailer+(medicinal+only)"%2C"delivery+only+retailer+(medicinal+and+adult+use)"%5D%7D%5D'
+            params['advanced_search'] = '%5B%7B"name"%3A"form"%2C"placeholder"%3Anull%2C"method"%3A"is"%2C"value"%3A5804%7D%2C%7B"name"%3A"rfdd8a5g7g"%2C"placeholder"%3A"answer_to"%2C"method"%3A"is_any"%2C"value"%3A%5B"retailer+(medical+and+adult+use)"%2C"medical+retailer+(medical+only)"%2C"delivery+only+retail+(medical+and+adult+use)"%5D%7D%5D'
 
         sd_responses = self.scrndr.get_project_responses(self.scrndr_proj_id, params, 500)
 
@@ -50,31 +59,32 @@ class PermitList():
         if isinstance(sd_responses, list):
             for resp in sd_responses:
                 if resp.get('responses', False) and resp['responses'].get('dd8a5g7g', False):
-                    resp_status = resp.get('status', '').upper()
+                    resp_status = resp.get('status', '').lower()
+                    resp_referred = self.get_referred_departments(resp.get('labels'))
                     item = {
-                        'APPLICATION ID':'',
-                        'DBA NAME':'',
-                        'ADDRESS':'',
-                        'PARCEL':'',
-                        'STATUS':resp_status,
-                        'REFERRING DEPARTMENT':''
+                        'application_id':'',
+                        'dba_name':'',
+                        'address':'',
+                        'parcel':'',
+                        'status':resp_status,
+                        'referred':", ".join(resp_referred)
                     }
                     data = resp['responses']
-                    item['APPLICATION ID'] = str(data.get('uqqrsogr') or '')
+                    item['application_id'] = str(data.get('uqqrsogr') or '')
                     if not data.get('uqqrsogr'):
-                        item['APPLICATION ID'] = 'P-' + str(resp['sequential_id']) + 'S'
-                    item['DBA NAME'] = str(data.get('60w4ep9y') or '')
-                    item['PARCEL'] = data.get('kvrgbqrl', '')
+                        item['application_id'] = 'P-' + str(resp['id'])
+                    item['dba_name'] = str(data.get('60w4ep9y') or '')
+                    item['parcel'] = data.get('kvrgbqrl', '')
                     if data.get('kby1cm3l'):
                         addr = data.get('kby1cm3l')
-                        item['ADDRESS'] = addr.get('street', '')
-                        item['ADDRESS'] += ', '+addr.get('city', '')
-                        item['ADDRESS'] += ', '+addr.get('state', '')
-                        item['ADDRESS'] += ' '+addr.get('zipcode', '')
-                    item['ADDRESS'] = item['ADDRESS'].strip(' ,')
+                        item['address'] = addr.get('street', '')
+                        item['address'] += ', '+addr.get('city', '')
+                        item['address'] += ', '+addr.get('state', '')
+                        item['address'] += ' '+addr.get('zipcode', '')
+                    item['address'] = item['address'].strip(' ,')
                     if data['dd8a5g7g'] and data['dd8a5g7g']['checked']:
                         for applied_permit_type in data['dd8a5g7g']['checked']:
-                            item[applied_permit_type.upper()] = resp_status
+                            item[applied_permit_type.lower()] = resp_status
 
                     permit_list.append(item)
                 else:
@@ -94,26 +104,34 @@ class PermitList():
         """ return permit list in legacy format """
         legacy_permit_list = {}
         for item in permit_list:
-            key = (item['DBA NAME'] + ' ' + item['APPLICATION ID']).strip()
+            key = (item['dba_name'] + ' ' + item['application_id']).strip()
             new_item = {
-                'application_id':item['APPLICATION ID'],
-                'dba_name':item['DBA NAME'],
-                'address':item['ADDRESS'],
-                'parcel':item['PARCEL'],
+                'application_id':item['application_id'],
+                'dba_name':item['dba_name'],
+                'address':item['address'],
+                'parcel':item['parcel'],
                 'activities':'',
-                'referring_dept':'',
-                'status': item['STATUS'].title()
+                'referring_dept':item['referred'],
+                'status': item['status'].title()
             }
             acts = []
-            if item.get('RETAILER (MEDICINAL AND ADULT USE)'):
+            if item.get('retailer (medical and adult use)'):
                 acts.append('retailer (medical and adult use)')
-            if item.get('DELIVERY ONLY RETAILER (MEDICINAL AND ADULT USE)'):
+            if item.get('delivery only retail (medical and adult use)'):
                 acts.append('delivery only retailer (medical and adult use)')
-            if item.get('MEDICINAL RETAILER (MEDICINAL ONLY)'):
+            if item.get('medical retailer (medical only)'):
                 acts.append('medicinal cannabis retailer (medical only)')
             new_item['activities'] = ", ".join(acts)
             legacy_permit_list[key] = new_item
         return legacy_permit_list
+
+    def get_referred_departments(self, labels):
+        """ return list of referred to departments """
+        referred_to = []
+        for label in labels:
+            if label in list(self.referred_label_map.keys()):
+                referred_to.append(self.referred_label_map.get(label))
+        return referred_to
 
     def on_get(self, _req, resp, permit_type):
         """on GET request
