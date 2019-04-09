@@ -3,14 +3,14 @@ import json
 from service.resources.permit_list import PermitList
 
 def test_get_list_transform():
-    """Test ELT for the Permit List"""
+    """Test ETL for the Permit List"""
     permit_list_object = PermitList()
     permit_list = permit_list_object.get_list_transform(get_mock_sd_response())
     expected_permit_list = get_expected_permit_list()
     assert expected_permit_list == permit_list
 
 def test_get_legacy_list_transform():
-    """Test ELT for the Permit List"""
+    """Test ETL for the Permit List"""
     permit_list_object = PermitList()
     permit_list = permit_list_object.get_list_transform(get_mock_sd_response())
     legacy_permit_list = permit_list_object.get_legacy_list_transform(permit_list)
@@ -19,17 +19,18 @@ def test_get_legacy_list_transform():
 
 def get_expected_permit_list():
     """returns expected permit list from mock"""
-    return json.loads("""[{"APPLICATION ID": "P-47S", "DBA NAME": "TESTblah",
-        "ADDRESS": "California", "PARCEL": "no idea", "STATUS": "SUBMITTED", "REFERRING DEPARTMENT": "", "CULTIVATOR OR GROWER (INDOOR)": "SUBMITTED", "DISTRIBUTOR": "SUBMITTED", "RETAILER (MEDICINAL AND ADULT USE)": "SUBMITTED", "MANUFACTURER (NONVOLATILE)": "SUBMITTED"},
-        {"APPLICATION ID": "TESTblah2", "DBA NAME": "Bestest Buddy Bud", "ADDRESS": "California", "PARCEL": "no idea", "STATUS": "SUBMITTED", "REFERRING DEPARTMENT": "", 
-        "CULTIVATOR OR GROWER (INDOOR)": "SUBMITTED", "DISTRIBUTOR": "SUBMITTED", "MANUFACTURER (NONVOLATILE)": "SUBMITTED", 
-        "RETAILER (MEDICINAL AND ADULT USE)": "SUBMITTED", "DELIVERY ONLY RETAILER (MEDICINAL AND ADULT USE)": "SUBMITTED", 
-        "MEDICINAL RETAILER (MEDICINAL ONLY)": "SUBMITTED"}]""")
+    return json.loads("""[{"application_id": "P-2187964", "dba_name": "TESTblah",
+        "address": "California", "parcel": "no idea", "status": "submitted", "referred": "Planning Department, Department of Public Health, Mayor's Office of Disability", "cultivator or grower (indoor)": "submitted", "distributor (cultivation to retailer)": "submitted", "retailer (medical and adult use)": "submitted", "manufacturer (nonvolatile)": "submitted"},
+        {"application_id": "TESTblah2", "dba_name": "Bestest Buddy Bud", "address": "California", "parcel": "no idea", "status": "submitted", "referred": "", 
+        "cultivator or grower (indoor)": "submitted", "distributor (cultivation to retailer)": "submitted", "manufacturer (nonvolatile)": "submitted", "manufacturer (volatile) (nonmicrobusiness)": "submitted", 
+        "retailer (medical and adult use)": "submitted", "delivery only retail (medical and adult use)": "submitted", 
+        "medical retailer (medical only)": "submitted", 
+        "testing laboratory (nonmicrobusiness)": "submitted"}]""")
 
 def get_expected_legacy_permit_list():
     """returns legacy expected permit list from mock"""
-    return json.loads("""{"TESTblah P-47S": {"application_id": "P-47S", "dba_name": "TESTblah",
-    "address": "California", "parcel": "no idea", "activities": "retailer (medical and adult use)", "referring_dept": "", "status": "Submitted"}, "Bestest Buddy Bud TESTblah2": {"application_id": "TESTblah2", "dba_name": "Bestest Buddy Bud", 
+    return json.loads("""{"TESTblah P-2187964": {"application_id": "P-2187964",
+    "dba_name": "TESTblah", "address": "California", "parcel": "no idea", "activities": "retailer (medical and adult use)", "referring_dept": "Planning Department, Department of Public Health, Mayor's Office of Disability", "status": "Submitted"}, "Bestest Buddy Bud TESTblah2": {"application_id": "TESTblah2", "dba_name": "Bestest Buddy Bud", 
     "address": "California", "parcel": "no idea", 
     "activities": "retailer (medical and adult use), delivery only retailer (medical and adult use), medicinal cannabis retailer (medical only)", 
     "referring_dept": "", "status": "Submitted"}}""")
@@ -236,8 +237,8 @@ def get_mock_sd_response():
             "dd8a5g7g": {
                 "checked": [
                     "cultivator or grower (indoor)",
-                    "distributor",
-                    "retailer (medicinal and adult use)",
+                    "distributor (cultivation to retailer)",
+                    "retailer (medical and adult use)",
                     "manufacturer (nonvolatile)"
                 ]
             },
@@ -268,7 +269,15 @@ def get_mock_sd_response():
         "created_at": "2019-01-22T23:15:21.123Z",
         "updated_at": "2019-01-22T23:48:06.693Z",
         "status": "Submitted",
-        "labels": [],
+        "labels": [
+            "Fire - Approved w/ Conditions",
+            "Fire - Denied",
+            "Fire - Approved",
+            "Post on Website",
+            "Planning - Referred",
+            "DPH - Referred",
+            "MOD - Referred"
+        ],
         "responder_language": "en",
         "responder": {
             "name": "TEST hello 2",
@@ -480,11 +489,13 @@ def get_mock_sd_response():
             "dd8a5g7g": {
                 "checked": [
                     "cultivator or grower (indoor)",
-                    "distributor",
+                    "distributor (cultivation to retailer)",
                     "manufacturer (nonvolatile)",
-                    "retailer (medicinal and adult use)",
-                    "delivery only retailer (medicinal and adult use)", 
-                    "medicinal retailer (medicinal only)"
+                    "retailer (medical and adult use)",
+                    "delivery only retail (medical and adult use)", 
+                    "medical retailer (medical only)",
+                    "manufacturer (volatile) (nonmicrobusiness)",
+                    "testing laboratory (nonmicrobusiness)"
                 ]
             },
             "ujpoc5lf": null,
