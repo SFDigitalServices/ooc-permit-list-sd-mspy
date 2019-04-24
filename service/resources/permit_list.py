@@ -63,7 +63,7 @@ class PermitList():
                     resp_referred = self.get_referred_departments(resp.get('labels'))
                     item = {
                         'application_id':'',
-                        'dba_name':'',
+                        'business_name':'',
                         'address':'',
                         'parcel':'',
                         'status':resp_status,
@@ -73,10 +73,10 @@ class PermitList():
                     item['application_id'] = str(data.get('uqqrsogr') or '')
                     if not data.get('uqqrsogr'):
                         item['application_id'] = 'P-' + str(resp['id'])
-                    item['dba_name'] = str(data.get('60w4ep9y') or '')
+                    item['business_name'] = str(data.get('60w4ep9y') or (data.get('t00kheyd' or '')))
                     item['parcel'] = data.get('kvrgbqrl', '')
-                    if data.get('kby1cm3l'):
-                        addr = data.get('kby1cm3l')
+                    if data.get('kbqz4189'):
+                        addr = data.get('kbqz4189')
                         item['address'] = addr.get('street', '')
                         item['address'] += ', '+addr.get('city', '')
                         item['address'] += ', '+addr.get('state', '')
@@ -104,10 +104,10 @@ class PermitList():
         """ return permit list in legacy format """
         legacy_permit_list = {}
         for item in permit_list:
-            key = (item['dba_name'] + ' ' + item['application_id']).strip()
+            key = (item['business_name'] + ' ' + item['application_id']).strip()
             new_item = {
                 'application_id':item['application_id'],
-                'dba_name':item['dba_name'],
+                'dba_name':item['business_name'],
                 'address':item['address'],
                 'parcel':item['parcel'],
                 'activities':'',
