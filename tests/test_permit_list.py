@@ -19,9 +19,10 @@ def test_get_legacy_list_transform():
 
 def get_expected_permit_list():
     """returns expected permit list from mock"""
-    return json.loads("""[{"application_id": "P-2187964", "business_name": "TESTblah",
+    return json.loads("""[{"application_id": "P-2187964",
+        "business_name": "Bestest Buddy Bud", "dba_name": "TESTblah",
         "address": "420 Bud St, SF, California 94102", "parcel": "no idea", "status": "submitted", "referred": "Planning Department, Department of Public Health, Mayor's Office of Disability", "cultivator or grower (indoor)": "submitted", "distributor (cultivation to retailer)": "submitted", "retailer (medical and adult use)": "submitted", "manufacturer (nonvolatile)": "submitted"},
-        {"application_id": "TESTblah2", "business_name": "Bestest Buddy Bud", "address": "421 Bestest Bud St, San Francisco, California 94103", "parcel": "no idea", "status": "submitted", "referred": "", 
+        {"application_id": "TESTblah2", "business_name": "Bestest Buddy Bud Bud", "dba_name": "Bestest Buddy Bud","address": "421 Bestest Bud St, San Francisco, California 94103", "parcel": "no idea", "status": "submitted", "referred": "", 
         "cultivator or grower (indoor)": "submitted", "distributor (cultivation to retailer)": "submitted", "manufacturer (nonvolatile)": "submitted", "manufacturer (volatile) (nonmicrobusiness)": "submitted", 
         "retailer (medical and adult use)": "submitted", "delivery only retail (medical and adult use)": "submitted", 
         "medical retailer (medical only)": "submitted", 
@@ -29,8 +30,8 @@ def get_expected_permit_list():
 
 def get_expected_legacy_permit_list():
     """returns legacy expected permit list from mock"""
-    return json.loads("""{"TESTblah P-2187964": {"application_id": "P-2187964",
-    "dba_name": "TESTblah", "address": "420 Bud St, SF, California 94102", "parcel": "no idea", "activities": "retailer (medical and adult use)", "referring_dept": "Planning Department, Department of Public Health, Mayor's Office of Disability", "status": "Submitted"}, "Bestest Buddy Bud TESTblah2": {"application_id": "TESTblah2", "dba_name": "Bestest Buddy Bud", 
+    return json.loads("""{"TESTBLAH P-2187964": {"application_id": "P-2187964",
+    "dba_name": "TESTblah", "address": "420 Bud St, SF, California 94102", "parcel": "no idea", "activities": "retailer (medical and adult use)", "referring_dept": "Planning Department, Department of Public Health, Mayor's Office of Disability", "status": "Submitted"}, "BESTEST BUDDY BUD TESTBLAH2": {"application_id": "TESTblah2", "dba_name": "Bestest Buddy Bud", 
     "address": "421 Bestest Bud St, San Francisco, California 94103", "parcel": "no idea", 
     "activities": "retailer (medical and adult use), delivery only retailer (medical and adult use), medicinal cannabis retailer (medical only)", 
     "referring_dept": "", "status": "Submitted"}}""")
