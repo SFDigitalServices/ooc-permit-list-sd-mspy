@@ -32,7 +32,7 @@ class PermitList():
         """return list of permits"""
         self.logger_name += '.get_permit_list.'+permit_type
         params = {'per_page': 100, 'page' : 1, 'label': 'Post+on+Website'}
-        if permit_type == 'retail':
+        if permit_type == 'retail':# or permit_type == 'retail_legacy':
             # pylint: disable=line-too-long
             params['advanced_search'] = '%5B%7B"name"%3A"form"%2C"placeholder"%3Anull%2C"method"%3A"is"%2C"value"%3A5804%7D%2C%7B"name"%3A"rfdd8a5g7g"%2C"placeholder"%3A"answer_to"%2C"method"%3A"is_any"%2C"value"%3A%5B"retailer+(medical+and+adult+use)"%2C"medical+retailer+(medical+only)"%2C"delivery+only+retail+(medical+and+adult+use)"%5D%7D%5D'
 
@@ -55,35 +55,47 @@ class PermitList():
         """return a transformed list from screendoor reponses """
         permit_list = []
         responses_missing = []
-
+        sd_fields = {
+            'activity' : 'dd8a5g7g',
+            'app_id' : 'uqqrsogr',
+            'biz_name' : 't00kheyd',
+            'dba_name' : '60w4ep9y',
+            'addr' : 'kbqz4189',
+            'parcel' : 'kvrgbqrl'
+        }
         if isinstance(sd_responses, list):
             for resp in sd_responses:
-                if resp.get('responses', False) and resp['responses'].get('dd8a5g7g', False):
+                if (resp.get('responses', False)
+                        and resp['responses'].get(sd_fields['activity'], False)
+                        and (resp['responses'].get(sd_fields['biz_name'], False)
+                             or resp['responses'].get(sd_fields['dba_name'], False))):
                     resp_status = resp.get('status', '').lower()
                     resp_referred = self.get_referred_departments(resp.get('labels'))
                     item = {
                         'application_id':'',
                         'business_name':'',
+                        'dba_name':'',
                         'address':'',
                         'parcel':'',
                         'status':resp_status,
                         'referred':", ".join(resp_referred)
                     }
                     data = resp['responses']
-                    item['application_id'] = str(data.get('uqqrsogr') or '')
-                    if not data.get('uqqrsogr'):
+                    item['application_id'] = str(data.get(sd_fields['app_id']) or '')
+                    if not data.get(sd_fields['app_id']):
                         item['application_id'] = 'P-' + str(resp['id'])
-                    item['business_name'] = str(data.get('60w4ep9y') or (data.get('t00kheyd' or '')))
-                    item['parcel'] = data.get('kvrgbqrl', '')
-                    if data.get('kbqz4189'):
-                        addr = data.get('kbqz4189')
-                        item['address'] = addr.get('street', '')
-                        item['address'] += ', '+addr.get('city', '')
-                        item['address'] += ', '+addr.get('state', '')
-                        item['address'] += ' '+addr.get('zipcode', '')
+                    item['business_name'] = str(data.get(sd_fields['biz_name']) or '')
+                    item['dba_name'] = str(data.get(sd_fields['dba_name']) or '')
+                    item['parcel'] = data.get(sd_fields['parcel'], '')
+                    if data.get(sd_fields['addr']) and data.get(sd_fields['addr']).get('street'):
+                        addr = data.get(sd_fields['addr'])
+                        item['address'] = str(addr.get('street') or '')
+                        item['address'] += ', '+str(addr.get('city') or '')
+                        item['address'] += ', '+str(addr.get('state') or '')
+                        item['address'] += ' '+str(addr.get('zipcode') or '')
                     item['address'] = item['address'].strip(' ,')
-                    if data['dd8a5g7g'] and data['dd8a5g7g']['checked']:
-                        for applied_permit_type in data['dd8a5g7g']['checked']:
+                    if data[sd_fields['activity']] and data[sd_fields['activity']]['checked']:
+                        for applied_permit_type in data[sd_fields['activity']]['checked']:
                             item[applied_permit_type.lower()] = resp_status
 
                     permit_list.append(item)
@@ -104,16 +116,18 @@ class PermitList():
         """ return permit list in legacy format """
         legacy_permit_list = {}
         for item in permit_list:
-            key = (item['business_name'] + ' ' + item['application_id']).strip()
             new_item = {
                 'application_id':item['application_id'],
-                'dba_name':item['business_name'],
+                'dba_name':item['dba_name'],
                 'address':item['address'],
                 'parcel':item['parcel'],
                 'activities':'',
                 'referring_dept':item['referred'],
                 'status': item['status'].title()
             }
+            if new_item['dba_name'] == '':
+                new_item['dba_name'] = item['business_name']
+            key = (new_item['dba_name'] + ' ' + new_item['application_id']).strip().upper()
             acts = []
             if item.get('retailer (medical and adult use)'):
                 acts.append('retailer (medical and adult use)')
@@ -140,7 +154,10 @@ class PermitList():
         msg = False
         if permit_type in ('retail', 'retail_legacy'):
             permit_list = self.get_permit_list(permit_type)
-            permit_list.sort(key=lambda v: v.get('DBA NAME', '')+' '+v.get('APPLICATION ID', ''))
+            permit_list.sort(key=lambda v:
+                             ((v.get('dba_name') if v.get('dba_name')
+                               else v.get('business_name', ''))
+                              +' '+v.get('application_id', '')).upper())
             if isinstance(permit_list, list):
                 if permit_type == 'retail_legacy':
                     data = self.get_legacy_list_transform(permit_list)
