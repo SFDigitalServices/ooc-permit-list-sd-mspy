@@ -38,12 +38,11 @@ class PermitList():
 
         sd_responses = self.scrndr.get_project_responses(self.scrndr_proj_id, params, 500)
 
+        sd_responses_context = sd_responses
         if isinstance(sd_responses, list):
             sd_responses_context = {
                 'length': len(sd_responses),
                 'data': list(map(lambda x: x.get('sequential_id', ''), sd_responses))}
-        else:
-            sd_responses_context = sd_responses
 
         with sentry_sdk.configure_scope() as scope:
             scope.set_tag('logger', self.logger_name)
@@ -53,7 +52,7 @@ class PermitList():
 
     def get_list_transform(self, sd_responses):
         """return a transformed list from screendoor reponses """
-        permit_list = []
+        permit_list = False
         responses_missing = []
         sd_fields = {
             'activity' : 'dd8a5g7g',
@@ -64,6 +63,7 @@ class PermitList():
             'parcel' : 'kvrgbqrl'
         }
         if isinstance(sd_responses, list):
+            permit_list = []
             for resp in sd_responses:
                 if (resp.get('responses', False)
                         and resp['responses'].get(sd_fields['activity'], False)
@@ -85,7 +85,7 @@ class PermitList():
                     if not data.get(sd_fields['app_id']):
                         item['application_id'] = 'P-' + str(resp['id'])
                     item['business_name'] = str(data.get(sd_fields['biz_name']) or '')
-                    item['dba_name'] = str(data.get(sd_fields['dba_name']) or '')
+                    item['dba_name'] = str(data.get(sd_fields['dba_name']) or item['business_name'])
                     item['parcel'] = data.get(sd_fields['parcel'], '')
                     if data.get(sd_fields['addr']) and data.get(sd_fields['addr']).get('street'):
                         addr = data.get(sd_fields['addr'])
@@ -108,8 +108,6 @@ class PermitList():
                 scope.set_extra('get_list_transform.permit_list_len', len(permit_list))
                 if responses_missing:
                     scope.set_extra('get_list_transform.responses_missing', responses_missing)
-        else:
-            return False
         return permit_list
 
     def get_legacy_list_transform(self, permit_list):
@@ -125,8 +123,6 @@ class PermitList():
                 'referring_dept':item['referred'],
                 'status': item['status'].title()
             }
-            if new_item['dba_name'] == '':
-                new_item['dba_name'] = item['business_name']
             key = (new_item['dba_name'] + ' ' + new_item['application_id']).strip().upper()
             acts = []
             if item.get('retailer (medical and adult use)'):
@@ -177,3 +173,4 @@ class PermitList():
             sentry_sdk.capture_message(msg, 'error')
             resp.body = json.dumps(jsend.error(msg))
             resp.status = falcon.HTTP_400
+            
