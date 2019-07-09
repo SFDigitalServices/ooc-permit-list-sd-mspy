@@ -13,7 +13,8 @@ def start_service():
     """
     # Initialize Sentry
     sentry_dsn = os.environ.get('SENTRY_DSN')
-    if(os.environ.get('environment').lower() == 'production'
+    if((os.environ.get('environment').lower() == 'production'
+            or os.environ.get('environment').lower() == 'ci')
        and os.environ.get('SENTRY_DSN_PRODUCTION')):
         sentry_dsn = os.environ.get('SENTRY_DSN_PRODUCTION')
     sentry_sdk.init(
@@ -23,7 +24,8 @@ def start_service():
     # Initialize PermitList
     permit_list_obj = PermitList()
     permit_list_obj.init_screendoor(
-        os.environ['SD_KEY'], '0', os.environ['SD_HOST'], os.environ['SD_PROJECT']
+        os.environ['SD_KEY'], '1',
+        os.environ['SD_HOST'], os.environ['SD_PROJECT']
     )
 
     # Initialize Falcon

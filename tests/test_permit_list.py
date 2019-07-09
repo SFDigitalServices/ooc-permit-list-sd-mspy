@@ -1,6 +1,43 @@
+# pylint: disable=redefined-outer-name
 """Tests for permit list"""
 import json
+import pytest
+import jsend
+from falcon import testing
+import service.microservice
 from service.resources.permit_list import PermitList
+
+@pytest.fixture()
+def client():
+    """ client fixture """
+    return testing.TestClient(service.microservice.start_service())
+
+def test_get_permit_list(client):
+    """Test get_permit_list"""
+    response = client.simulate_get('/list/retail')
+    assert response.status_code == 200
+
+    response_json = json.loads(response.content)
+    assert jsend.is_success(response_json)
+    assert isinstance(response_json['data']['list'], list)
+
+def test_get_permit_list_legacy(client):
+    """Test get_permit_list legacy format"""
+    response = client.simulate_get('/list/retail_legacy')
+    assert response.status_code == 200
+
+    response_json = json.loads(response.content)
+    assert jsend.is_success(response_json)
+    assert isinstance(response_json['data'], dict)
+
+def test_get_permit_list_error(client):
+    """Test get_permit_list error state"""
+    response = client.simulate_get('/list/stuff')
+    assert response.status_code == 400
+
+    response_json = json.loads(response.content)
+    assert jsend.is_error(response_json)
+
 
 def test_get_list_transform():
     """Test ETL for the Permit List"""
@@ -22,7 +59,7 @@ def get_expected_permit_list():
     return json.loads("""[{"application_id": "P-2187964",
         "business_name": "Bestest Buddy Bud", "dba_name": "TESTblah",
         "address": "420 Bud St, SF, California 94102", "parcel": "no idea", "status": "submitted", "referred": "Planning Department, Department of Public Health, Mayor's Office of Disability", "cultivator or grower (indoor)": "submitted", "distributor (cultivation to retailer)": "submitted", "retailer (medical and adult use)": "submitted", "manufacturer (nonvolatile)": "submitted"},
-        {"application_id": "TESTblah2", "business_name": "Bestest Buddy Bud Bud", "dba_name": "Bestest Buddy Bud","address": "421 Bestest Bud St, San Francisco, California 94103", "parcel": "no idea", "status": "submitted", "referred": "", 
+        {"application_id": "TESTblah2", "business_name": "Bestest Buddy Bud Bud", "dba_name": "Bestest Buddy Bud Bud","address": "421 Bestest Bud St, San Francisco, California 94103", "parcel": "no idea", "status": "submitted", "referred": "", 
         "cultivator or grower (indoor)": "submitted", "distributor (cultivation to retailer)": "submitted", "manufacturer (nonvolatile)": "submitted", "manufacturer (volatile) (nonmicrobusiness)": "submitted", 
         "retailer (medical and adult use)": "submitted", "delivery only retail (medical and adult use)": "submitted", 
         "medical retailer (medical only)": "submitted", 
@@ -31,7 +68,7 @@ def get_expected_permit_list():
 def get_expected_legacy_permit_list():
     """returns legacy expected permit list from mock"""
     return json.loads("""{"TESTBLAH P-2187964": {"application_id": "P-2187964",
-    "dba_name": "TESTblah", "address": "420 Bud St, SF, California 94102", "parcel": "no idea", "activities": "retailer (medical and adult use)", "referring_dept": "Planning Department, Department of Public Health, Mayor's Office of Disability", "status": "Submitted"}, "BESTEST BUDDY BUD TESTBLAH2": {"application_id": "TESTblah2", "dba_name": "Bestest Buddy Bud", 
+    "dba_name": "TESTblah", "address": "420 Bud St, SF, California 94102", "parcel": "no idea", "activities": "retailer (medical and adult use)", "referring_dept": "Planning Department, Department of Public Health, Mayor's Office of Disability", "status": "Submitted"}, "BESTEST BUDDY BUD BUD TESTBLAH2": {"application_id": "TESTblah2", "dba_name": "Bestest Buddy Bud Bud", 
     "address": "421 Bestest Bud St, San Francisco, California 94103", "parcel": "no idea", 
     "activities": "retailer (medical and adult use), delivery only retailer (medical and adult use), medicinal cannabis retailer (medical only)", 
     "referring_dept": "", "status": "Submitted"}}""")
@@ -325,7 +362,7 @@ def get_mock_sd_response():
             "6ma0d8qo": null,
             "fkpuv8fj": "1234567",
             "t00kheyd": "Bestest Buddy Bud Bud",
-            "60w4ep9y": "Bestest Buddy Bud",
+            "60w4ep9y": "",
             "kbqz4189": {
                 "city": "San Francisco",
                 "state": "California",
