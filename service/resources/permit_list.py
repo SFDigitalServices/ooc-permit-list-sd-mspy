@@ -20,6 +20,14 @@ class PermitList():
         'Environment - Referred' : "Department of the Environment"
     }
 
+    status_map = {
+        'Submitted' : 'Submitted',
+        'Processing' : 'Submitted',
+        'On Hold' : 'On Hold',
+        'Approved' : 'Approved',
+        'Build-out' : 'Approved'
+    }
+
     def __init__(self):
         self.logger_name = self.__class__.__name__.lower()
 
@@ -31,10 +39,10 @@ class PermitList():
     def get_permit_list(self, permit_type):
         """return list of permits"""
         self.logger_name += '.get_permit_list.'+permit_type
-        params = {'per_page': 100, 'page' : 1, 'label': 'Post+on+Website'}
-        if permit_type == 'retail':# or permit_type == 'retail_legacy':
-            # pylint: disable=line-too-long
-            params['advanced_search'] = '%5B%7B"name"%3A"form"%2C"placeholder"%3Anull%2C"method"%3A"is"%2C"value"%3A5804%7D%2C%7B"name"%3A"rfdd8a5g7g"%2C"placeholder"%3A"answer_to"%2C"method"%3A"is_any"%2C"value"%3A%5B"retailer+(medical+and+adult+use)"%2C"medical+retailer+(medical+only)"%2C"delivery+only+retail+(medical+and+adult+use)"%5D%7D%5D'
+        params = {'per_page': 100, 'page' : 1}
+
+        # pylint: disable=line-too-long
+        params['advanced_search'] = '%5B%7B"name"%3A"form"%2C"placeholder"%3Anull%2C"method"%3A"is"%2C"value"%3A5804%7D%2C%7B"name"%3A"rfdd8a5g7g"%2C"placeholder"%3A"answer_to"%2C"method"%3A"is_any"%2C"value"%3A%5B"retailer+(medical+and+adult+use)"%2C"medical+retailer+(medical+only)"%2C"delivery+only+retail+(medical+and+adult+use)"%5D%7D%5D'
 
         sd_responses = self.scrndr.get_project_responses(self.scrndr_proj_id, params, 500)
 
@@ -65,11 +73,13 @@ class PermitList():
         if isinstance(sd_responses, list):
             permit_list = []
             for resp in sd_responses:
-                if (resp.get('responses', False)
-                        and resp['responses'].get(sd_fields['activity'], False)
-                        and (resp['responses'].get(sd_fields['biz_name'], False)
-                             or resp['responses'].get(sd_fields['dba_name'], False))):
-                    resp_status = resp.get('status', '').lower()
+                if  (resp.get('responses', False)
+                     and resp['responses'].get(sd_fields['activity'], False)
+                     and (resp['responses'].get(sd_fields['biz_name'], False)
+                          or resp['responses'].get(sd_fields['dba_name'], False))
+                     and (resp.get('status', '') in self.status_map.keys())
+                    ):
+                    resp_status = self.status_map[resp.get('status')].lower()
                     resp_referred = self.get_referred_departments(resp.get('labels'))
                     item = {
                         'application_id':'',
