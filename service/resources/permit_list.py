@@ -22,10 +22,10 @@ class PermitList():
 
     status_map = {
         'Submitted' : 'Submitted',
-        'Processing' : 'Submitted',
+        'Processing' : 'Processing',
         'On Hold' : 'On Hold',
         'Approved' : 'Approved',
-        'Build-out' : 'Approved'
+        'Build-out' : 'Under Construction'
     }
 
     def __init__(self):
@@ -142,7 +142,11 @@ class PermitList():
             if item.get('medical retailer (medical only)'):
                 acts.append('medicinal cannabis retailer (medical only)')
             new_item['activities'] = ", ".join(acts)
-            legacy_permit_list[key] = new_item
+
+            #skip if activity only contains delivery only
+            if new_item['activities'] != 'delivery only retailer (medical and adult use)':
+                legacy_permit_list[key] = new_item
+
         return legacy_permit_list
 
     def get_referred_departments(self, labels):
