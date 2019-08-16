@@ -22,10 +22,19 @@ class PermitList():
 
     status_map = {
         'Submitted' : 'Submitted',
-        'Processing' : 'Submitted',
+        'Processing' : 'Processing',
         'On Hold' : 'On Hold',
         'Approved' : 'Approved',
-        'Build-out' : 'Approved'
+        'Build-out' : 'Under Construction'
+    }
+
+    activity_map = {
+        'retail' : {'text': 'retailer (medical and adult use)',
+                    'value': 'retailer (medical and adult use)'},
+        'delivery' : {'text': 'delivery only retailer (medical and adult use)',
+                      'value': 'delivery only retail (medical and adult use)'},
+        'mcd' : {'text': 'medicinal cannabis retailer (medical only)',
+                 'value': 'medical retailer (medical only)'}
     }
 
     def __init__(self):
@@ -135,14 +144,18 @@ class PermitList():
             }
             key = (new_item['dba_name'] + ' ' + new_item['application_id']).strip().upper()
             acts = []
-            if item.get('retailer (medical and adult use)'):
-                acts.append('retailer (medical and adult use)')
-            if item.get('delivery only retail (medical and adult use)'):
-                acts.append('delivery only retailer (medical and adult use)')
-            if item.get('medical retailer (medical only)'):
-                acts.append('medicinal cannabis retailer (medical only)')
+            if item.get(self.activity_map['retail']['value']):
+                acts.append(self.activity_map['retail']['text'])
+            if item.get(self.activity_map['delivery']['value']):
+                acts.append(self.activity_map['delivery']['text'])
+            if item.get(self.activity_map['mcd']['value']):
+                acts.append(self.activity_map['mcd']['text'])
             new_item['activities'] = ", ".join(acts)
-            legacy_permit_list[key] = new_item
+
+            #skip if activity only contains delivery only
+            if new_item['activities'] != self.activity_map['delivery']['text']:
+                legacy_permit_list[key] = new_item
+
         return legacy_permit_list
 
     def get_referred_departments(self, labels):
